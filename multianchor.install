@@ -1,0 +1,4 @@
+<?php
+function multianchor_uninstall() {
+  variable_del('multianchors');
+}
