@@ -42,17 +42,8 @@ function multianchor_settings() {
 
 // Вывод в форму анкоров
 function _multianchor_get_urls() {
-  $anchors =variable_get('multianchors');
-  $str = "";
-  foreach ($anchors as $link => $anchor) {
-    $str .= "# {$link} \n";
-    foreach($anchor as $label => $prob) {
-      $str .= "{$label} : {$prob} \n";
-    }
-    $str .= "\n";
-  }
+  $str = variable_get('multianchors');
   return $str;
-
 }
 
 // Проверка формы на правильность введенных данных
@@ -62,8 +53,16 @@ function multianchor_settings_validate($form, &$form_state) {
   $lines = split("\n", $url_str);
   foreach ($lines as $l) {
     trim($l);
+    
+    if (ereg("//", $l) && !ereg("://", $l)) {
+      $urls_array = split("//", $l, 2);    
+      $l=trim($urls_array[0]);        
+    }
+    
     if (preg_match("/^[[:space:]]*$/", $l))
     continue;
+    
+    
     if ($l['0']=="#"){
       $urls_array = split("#", $l, 2);
       $key=trim($urls_array[1]);
@@ -98,37 +97,23 @@ function multianchor_settings_validate($form, &$form_state) {
 
 // Сохранение всех введенных анкоров
 function multianchor_settings_submit($form, &$form_state) {
-  $url_str = $form_state['values']['urls'];
-  $lines = split("\n", $url_str);
-  foreach ($lines as $l) {
-    trim($l);
-    if (preg_match("/^[[:space:]]*$/", $l))
-    continue;
-    if ($l['0']=="#"){
-      $urls_array = split("#", $l, 2);
-      $key=trim($urls_array[1]);
-      continue;
-    }
-
-    $str_array = explode(":", $l);
-    $key1 = trim($str_array[0]);
-    $anchors[$key][$key1] = trim($str_array[1]);
-  }
-  variable_set('multianchors', $anchors);
-
+  $urlStr = $form_state['values']['urls'];
+  variable_set('multianchors', $urlStr);
+  $anchors = parse_cache($urlStr);
 }
+
+
 
 function multianchor_block_info() {
   $blocks = array();
   $blocks[0]['info'] = t('MultiAnchor');
-  $blocks[0]['cache'] = BLOCK_CACHE_GLOBAL;
+  $blocks[0]['cache'] = BLOCK_CACHE_GLOBAL; 
    
   return $blocks;
 }
 
 // Вывод в блок
 function multianchor_block_view($delta = '') {
-
   if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
     $node = node_load(arg(1));
     $blocks = array();
@@ -138,6 +123,7 @@ function multianchor_block_view($delta = '') {
     $blocks = array();
     $blocks['subject'] = null;
     $blocks['content'] = anchor(crc32(arg(0) . arg(1) . arg(2)));
+   
   }
 
   return $blocks;
@@ -165,9 +151,59 @@ function generate_anchor($anchors, $seed) {
 }
 
 function anchor($seed) {
-  $anchors = variable_get('multianchors');
-  $anchor = generate_anchor($anchors, $seed);
+  $anchors = cache_get("cache_anchors", "cache_block");
+    if (empty($anchors->data)) {
+      $urlStr = variable_get('multianchors');
+      $anchors = parse_cache($urlStr);
+      $anchors = cache_get("cache_anchors", "cache_block");
+    }
+  $anchor = generate_anchor($anchors->data, $seed);
   $link = $anchor["link"];
   $label = $anchor["label"];
   return "<a href='{$link}'>{$label}</a>";
 }
+
+function parse_cache($url_str) {
+  $lines = split("\n", $url_str);
+  foreach ($lines as $l) {
+    trim($l);
+    if (ereg("//", $l) && !ereg("://", $l)) {
+      $urls_array = split("//", $l, 2);    
+      $l=trim($urls_array[0]);        
+    }
+    if (preg_match("/^[[:space:]]*$/", $l))
+      continue;
+    if ($l['0']=="#") {
+      $urls_array = split("#", $l, 2);
+      $key=trim($urls_array[1]);
+      continue;
+    }
+
+    $str_array = explode(":", $l);
+    $key1 = trim($str_array[0]);
+    $anchors[$key][$key1] = trim($str_array[1]);
+    cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
+  }
+  return $anchors;   
+}
+
+/*function multianchor_theme() {
+  return array(
+    'multianchor_block' => array(
+      'arguments' => array('seed' => NULL),
+    ),
+  );
+}
+
+function theme_multianchor_block($seed) {  
+  $anchors = cache_get("cache_anchors", "cache_block");
+    if (empty($anchors->data)) {
+      $urlStr = variable_get('multianchors');
+      $anchors = parse_cache($urlStr);
+      $anchors = cache_get("cache_anchors", "cache_block");
+    }
+  $anchor = generate_anchor($anchors->data, $seed);
+  $link = $anchor["link"];
+  $label = $anchor["label"];
+  return "<a href='{$link}'>{$label}</a>";
+}*/
