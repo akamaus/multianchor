@@ -107,7 +107,9 @@ function multianchor_settings_submit($form, &$form_state) {
 function multianchor_block_info() {
   $blocks = array();
   $blocks[0]['info'] = t('MultiAnchor');
-  $blocks[0]['cache'] = BLOCK_CACHE_GLOBAL; 
+  $blocks[0]['cache'] = DRUPAL_CACHE_PER_PAGE;
+  $blocks[0]['status'] = 1;
+  $blocks[0]['region'] = 'footer';  
    
   return $blocks;
 }
