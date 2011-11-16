@@ -162,7 +162,8 @@ function anchor($seed) {
   $anchor = generate_anchor($anchors->data, $seed);
   $link = $anchor["link"];
   $label = $anchor["label"];
-  return "<a href='{$link}'>{$label}</a>";
+  $output = l($label, $link);
+  return $output;
 }
 
 function parse_cache($url_str) {
@@ -188,24 +189,3 @@ function parse_cache($url_str) {
   }
   return $anchors;   
 }
-
-/*function multianchor_theme() {
-  return array(
-    'multianchor_block' => array(
-      'arguments' => array('seed' => NULL),
-    ),
-  );
-}
-
-function theme_multianchor_block($seed) {  
-  $anchors = cache_get("cache_anchors", "cache_block");
-    if (empty($anchors->data)) {
-      $urlStr = variable_get('multianchors');
-      $anchors = parse_cache($urlStr);
-      $anchors = cache_get("cache_anchors", "cache_block");
-    }
-  $anchor = generate_anchor($anchors->data, $seed);
-  $link = $anchor["link"];
-  $label = $anchor["label"];
-  return "<a href='{$link}'>{$label}</a>";
-}*/
