@@ -29,14 +29,46 @@ function multianchor_settings() {
       '#title' =>  t('Specify a set of URLs'),
       '#description' => t('URLs should be separated by commas'),
       '#type' => 'textarea',
+      '#rows' => '25',
       '#default_value' => _multianchor_get_urls(),
   );
-
+  
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save multianchor settings'),
   );
-
+  
+  
+  $form['hint'] = array(
+    '#markup' => 
+      '<p>
+          # - link in the site <br>
+          // - comment <br>
+          | - separates the anchor of title <br>
+          : - separates the title of weight <br>
+          <br>'
+          
+  );
+  
+  $form['example'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Example',
+    '#description' =>
+     '<p><i>
+          // comment<br>
+          # http://3w-site.ru<br>
+          first anchor | description : 50<br>
+          second anchor | description : 30<br>
+          <br>         
+           # http://3w-software.ru // comment<br>
+          first anchor | description : 10<br>
+          second anchor | description : 20<br>          
+          </i>
+      </p>',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE, 
+  );
+      
   return $form;
 }
 
@@ -51,7 +83,7 @@ function multianchor_settings_validate($form, &$form_state) {
   $ret = TRUE;
   $url_str = $form_state['values']['urls'];
   $lines = split("\n", $url_str);
-  foreach ($lines as $l) {
+  foreach ($lines as $index=>$l) {
     trim($l);
     
     if (ereg("//", $l) && !ereg("://", $l)) {
@@ -67,26 +99,26 @@ function multianchor_settings_validate($form, &$form_state) {
       $urls_array = split("#", $l, 2);
       $key=trim($urls_array[1]);
       if (!preg_match("/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/",$key)) {
-        form_set_error('key', 'Неккоректный URL адрес: ' . $key);
+        form_set_error('key', $index+1 . ' строка: Неккоректный URL адрес: ' . $key);
         $ret = FALSE;
       }
       continue;
     }
 
     if (!ereg(':', $l)) {
-      form_set_error('l', 'Отсутствует ":" в строке: ' . $l);
+      form_set_error('l',  $index+1 . ' строка: Отсутствует ":" в строке: ' . $l);
       $ret = FALSE;
     }
 
     $str_array = explode(":", $l);
     $key1 = trim($str_array[0]);
     if (empty($key1)) {
-      form_set_error('key1', 'Не введено имя ссылки: ' . $key1);
+      form_set_error('key1', $index+1 .' строка: Не введено имя ссылки: ' . $key1);
       $ret = FALSE;
     }
 
     if (!preg_match("/^[0-9]+$/",  trim($str_array[1]))) {
-      form_set_error('trim($str_array[1])', 'Коэффициент должен быть целым числом: ' . trim($str_array[1]));
+      form_set_error('trim($str_array[1])', $index+1 . ' строка: Коэффициент должен быть целым числом: ' . trim($str_array[1]));
       $ret = FALSE;
     }
 
