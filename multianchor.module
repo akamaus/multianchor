@@ -101,25 +101,27 @@ function multianchor_settings_validate($form, &$form_state) {
       if (!preg_match("/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/",$key)) {
         form_set_error('key', $index+1 . ' строка: Неккоректный URL адрес: ' . $key);
         $ret = FALSE;
+        break;
       }
       continue;
     }
-
+    
+    if (!ereg('\|', $l)) {
+      form_set_error('l',  $index+1 . ' строка: Отсутствует "|" в строке: ' . $l);
+      $ret = FALSE;
+      break;
+    }
+    
     if (!ereg(':', $l)) {
       form_set_error('l',  $index+1 . ' строка: Отсутствует ":" в строке: ' . $l);
       $ret = FALSE;
+      break;
     }
-
-    $str_array = explode(":", $l);
-    $key1 = trim($str_array[0]);
-    if (empty($key1)) {
-      form_set_error('key1', $index+1 .' строка: Не введено имя ссылки: ' . $key1);
-      $ret = FALSE;
-    }
-
+    $str_array = explode(":", $l, 2);
     if (!preg_match("/^[0-9]+$/",  trim($str_array[1]))) {
       form_set_error('trim($str_array[1])', $index+1 . ' строка: Коэффициент должен быть целым числом: ' . trim($str_array[1]));
       $ret = FALSE;
+      break;
     }
 
   }
@@ -166,22 +168,21 @@ function multianchor_block_view($delta = '') {
 
 // Рулетка
 function generate_anchor($anchors, $seed) {
-  $num_sectors = 0;
-  foreach ($anchors as $anchor) {
-    foreach($anchor as $prob) {
-      $num_sectors += $prob;
+  $num_sectors = 0;  
+    foreach ($anchors as $anchor) {     
+      foreach($anchor as $a) {
+          $num_sectors += $a['points'];       
+      }      
     }
-  }
-
   srand($seed);
   $sector = rand(1, $num_sectors);
-
-  foreach ($anchors as $link => $anchor) {
-    foreach($anchor as $label => $prob) {
-      if ($sector <= $prob) return array("link" => $link, "label" => $label);
-      else $sector -= $prob;
+  
+    foreach ($anchors as $link=>$anchor) {
+      foreach($anchor as $a) {
+          if ($sector <= $a['points']) return array("title" =>$a['title'],  "link" => $link, "label" => $a['anchor']);
+            else $sector -= $a['points'];       
+      }      
     }
-  }
 }
 
 function anchor($seed) {
@@ -192,14 +193,17 @@ function anchor($seed) {
       $anchors = cache_get("cache_anchors", "cache_block");
     }
   $anchor = generate_anchor($anchors->data, $seed);
+  $title = $anchor["title"];
   $link = $anchor["link"];
+
   $label = $anchor["label"];
-  $output = l($label, $link);
+  $output = l($label, $link,  array('attributes' => array('title' => $title)));
   return $output;
 }
 
 function parse_cache($url_str) {
   $lines = split("\n", $url_str);
+  $index=1;
   foreach ($lines as $l) {
     trim($l);
     if (ereg("//", $l) && !ereg("://", $l)) {
@@ -214,10 +218,14 @@ function parse_cache($url_str) {
       continue;
     }
 
-    $str_array = explode(":", $l);
-    $key1 = trim($str_array[0]);
-    $anchors[$key][$key1] = trim($str_array[1]);
-    cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
+    $str_array = explode("|", $l, 2);   
+    $anchors[$key][$index]['anchor'] = trim($str_array[0]);
+    $str_t_point = trim($str_array[1]);
+    $str_array = explode(":", $str_t_point, 2);
+    $anchors[$key][$index]['title'] = trim($str_array[0]);
+    $anchors[$key][$index]['points'] = trim($str_array[1]);
+    $index++;    
   }
+  cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
   return $anchors;   
 }
