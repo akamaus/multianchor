@@ -154,11 +154,11 @@ function multianchor_block_view($delta = '') {
     $node = node_load(arg(1));
     $blocks = array();
     $blocks['subject'] = null;
-    $blocks['content'] = anchor($node->nid);
+    $blocks['content'] = theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . anchor($node->nid);
   } else {
     $blocks = array();
     $blocks['subject'] = null;
-    $blocks['content'] = anchor(crc32(arg(0) . arg(1) . arg(2)));
+    $blocks['content'] = theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . anchor(crc32(arg(0) . arg(1) . arg(2)));
    
   }
 
@@ -203,7 +203,9 @@ function anchor($seed) {
 
 function parse_cache($url_str) {
   $lines = split("\n", $url_str);
-  $index=1;
+  $group=0;
+  $index=0;
+  $ratio=0;
   foreach ($lines as $l) {
     trim($l);
     if (ereg("//", $l) && !ereg("://", $l)) {
@@ -215,6 +217,7 @@ function parse_cache($url_str) {
     if ($l['0']=="#") {
       $urls_array = split("#", $l, 2);
       $key=trim($urls_array[1]);
+      $group++;
       continue;
     }
 
@@ -224,8 +227,12 @@ function parse_cache($url_str) {
     $str_array = explode(":", $str_t_point, 2);
     $anchors[$key][$index]['title'] = trim($str_array[0]);
     $anchors[$key][$index]['points'] = trim($str_array[1]);
-    $index++;    
+    $index++;
+    $ratio+=trim($str_array[1]);  
   }
+  drupal_set_message('Количество групп: ' . $group);
+  drupal_set_message('Количество анкоров: ' . $index);
+  drupal_set_message('Общий вес анкоров: ' . $ratio);
   cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
   return $anchors;   
 }
