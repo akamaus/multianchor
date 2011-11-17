@@ -33,6 +33,12 @@ function multianchor_settings() {
       '#default_value' => _multianchor_get_urls(),
   );
   
+  $form['prefix'] = array(
+      '#title' =>  t('Prefix'),
+      '#type' => 'textfield',
+      '#default_value' =>_multianchor_get_prefix(),
+  );
+  
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save multianchor settings'),
@@ -48,7 +54,7 @@ function multianchor_settings() {
           : - separates the title of weight <br>
           <br>'
           
-  );
+  );    
   
   $form['example'] = array(
     '#type' => 'fieldset',
@@ -78,6 +84,13 @@ function _multianchor_get_urls() {
   return $str;
 }
 
+function _multianchor_get_prefix() {
+  $str = variable_get('multianchors_prefix');
+  return $str;
+}
+
+
+
 // Проверка формы на правильность введенных данных
 function multianchor_settings_validate($form, &$form_state) {
   $ret = TRUE;
@@ -98,7 +111,7 @@ function multianchor_settings_validate($form, &$form_state) {
     if ($l['0']=="#"){
       $urls_array = split("#", $l, 2);
       $key=trim($urls_array[1]);
-      if (!preg_match("/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/",$key)) {
+      if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$key)) {
         form_set_error('key', $index+1 . ' строка: Неккоректный URL адрес: ' . $key);
         $ret = FALSE;
         break;
@@ -132,8 +145,12 @@ function multianchor_settings_validate($form, &$form_state) {
 // Сохранение всех введенных анкоров
 function multianchor_settings_submit($form, &$form_state) {
   $urlStr = $form_state['values']['urls'];
+  $prefix = $form_state['values']['prefix'];
   variable_set('multianchors', $urlStr);
+  variable_set('multianchors_prefix', $prefix);
   $anchors = parse_cache($urlStr);
+  
+  cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
 }
 
 
@@ -150,15 +167,16 @@ function multianchor_block_info() {
 
 // Вывод в блок
 function multianchor_block_view($delta = '') {
+  $prefix = variable_get('multianchors_prefix');
   if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
     $node = node_load(arg(1));
     $blocks = array();
     $blocks['subject'] = null;
-    $blocks['content'] = theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . anchor($node->nid);
+    $blocks['content'] = $prefix . theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . anchor($node->nid);
   } else {
     $blocks = array();
     $blocks['subject'] = null;
-    $blocks['content'] = theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . anchor(crc32(arg(0) . arg(1) . arg(2)));
+    $blocks['content'] = $prefix . theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . anchor(crc32(arg(0) . arg(1) . arg(2)));
    
   }
 
@@ -233,6 +251,6 @@ function parse_cache($url_str) {
   drupal_set_message('Количество групп: ' . $group);
   drupal_set_message('Количество анкоров: ' . $index);
   drupal_set_message('Общий вес анкоров: ' . $ratio);
-  cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
+ 
   return $anchors;   
 }
