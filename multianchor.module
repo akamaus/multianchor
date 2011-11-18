@@ -25,18 +25,41 @@ function multianchor_menu() {
 }
 
 function multianchor_settings() {
+   $stat = get_stat();
+   
+   $rows = array (
+      array (
+        $stat[0],
+        $stat[1],
+        $stat[2],
+      )
+    );
+   
+   $header = array(
+      'Количество групп',
+      'Количество анкоров',
+      'Общий вес анкоров',    
+    );
+    
+   // Вывод статистики
+   $var = array ('header' => $header, 'rows' => $rows); 
+   $form['stat'] = array(
+      '#type' => 'markup',
+      '#markup'=>  theme('table', array('header' => $header, 'rows' => $rows)),                  
+  ); 
+  
   $form['urls'] = array(
       '#title' =>  t('Specify a set of URLs'),
       '#description' => t('URLs should be separated by commas'),
       '#type' => 'textarea',
       '#rows' => '25',
-      '#default_value' => _multianchor_get_urls(),
+      '#default_value' => variable_get('multianchors'),
   );
   
   $form['prefix'] = array(
       '#title' =>  t('Prefix'),
       '#type' => 'textfield',
-      '#default_value' =>_multianchor_get_prefix(),
+      '#default_value' => variable_get('multianchors_prefix'),
   );
   
   $form['submit'] = array(
@@ -78,17 +101,11 @@ function multianchor_settings() {
   return $form;
 }
 
-// Вывод в форму анкоров
-function _multianchor_get_urls() {
-  $str = variable_get('multianchors');
-  return $str;
+function get_stat() {
+  $url = variable_get('multianchors');
+  $anchors = parse_cache($url, $stat);
+  return $stat;
 }
-
-function _multianchor_get_prefix() {
-  $str = variable_get('multianchors_prefix');
-  return $str;
-}
-
 
 
 // Проверка формы на правильность введенных данных
@@ -219,7 +236,7 @@ function anchor($seed) {
   return $output;
 }
 
-function parse_cache($url_str) {
+function parse_cache($url_str, &$stats) {
   $lines = split("\n", $url_str);
   $group=0;
   $index=0;
@@ -248,9 +265,7 @@ function parse_cache($url_str) {
     $index++;
     $ratio+=trim($str_array[1]);  
   }
-  drupal_set_message('Количество групп: ' . $group);
-  drupal_set_message('Количество анкоров: ' . $index);
-  drupal_set_message('Общий вес анкоров: ' . $ratio);
+  $stats = array($group, $index, $ratio);
  
   return $anchors;   
 }
