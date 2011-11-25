@@ -113,6 +113,18 @@ function get_stat() {
   return $stat;
 }
 
+function multianchor_theme() {
+  return array(
+    'multianchor_output' => array(
+      'arguments' => array('result' => NULL),
+    ),
+  );
+}
+
+function theme_multianchor_output($result) { 
+    $output = '<b>' .  $result['prefix'] . '</b>' . $result['link'] .  theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . '<b> ' . $result['suffix'] . '</b>' ;   
+  return $output;
+}
 
 // Проверка формы на правильность введенных данных
 function multianchor_settings_validate($form, &$form_state) {
@@ -194,19 +206,19 @@ function multianchor_block_info() {
 function multianchor_block_view($delta = '') {
   $prefix = variable_get('multianchors_prefix');
   $suffix = variable_get('multianchors_suffix');
-  if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
-    $node = node_load(arg(1));
-    $blocks = array();
-    $blocks['subject'] = null;
-    $blocks['content'] ='<b>' . $prefix . '</b>' .  anchor($node->nid) . '<em></em> <b>' . $suffix . '</b>';
-  } else {
-    $blocks = array();
-    $blocks['subject'] = null;
-    $blocks['content'] = '<b>' . $prefix . '</b>' . anchor(crc32(arg(0) . arg(1) . arg(2))) . '<em></em> <b>' . $suffix . '</b>' ;
-   
-  }
-
   
+if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
+    $node = node_load(arg(1));
+    $link = anchor($node->nid);
+  } else {
+    $link = anchor(crc32(arg(0) . arg(1) . arg(2))) ;   
+  }
+  
+  
+  $blocks = array();
+  $blocks['subject'] = null;
+  $result= array('prefix' => $prefix, 'link'=>$link, 'suffix'=>$suffix);
+  $blocks['content'] = theme('multianchor_output', $result);
   return $blocks;
 }
 
