@@ -2,4 +2,5 @@
 function multianchor_uninstall() {
   variable_del('multianchors');
   variable_del('multianchors_prefix');
+  variable_del('multianchors_suffix');
 }
