@@ -9,12 +9,12 @@ function multianchor_permission() {
 }
 
 function multianchor_menu() {
-   
+
   $items = array();
-   
+
   $items['admin/config/search/multianchor'] = array(
     'title' => 'Multianchor',
-    'description' => 'Configure the multianchor.',
+    'description' => 'Configure the multianchor',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('multianchor_settings'),
     'access callback' => 'user_access',
@@ -25,66 +25,56 @@ function multianchor_menu() {
 }
 
 function multianchor_settings() {
-   $stat = get_stat();
-   
-   $rows = array (
-      array (
-        $stat[0],
-        $stat[1],
-        $stat[2],
-      )
-    );
-   
-   $header = array(
-      'Количество групп',
-      'Количество анкоров',
-      'Общий вес анкоров',    
-    );
-    
-   // Вывод статистики
-   $var = array ('header' => $header, 'rows' => $rows); 
-   $form['stat'] = array(
-      '#type' => 'markup',
-      '#markup'=>  theme('table', array('header' => $header, 'rows' => $rows)),                  
-  ); 
-  
+  $header = array(
+    t('Url number'),
+    t('Anchor number'),
+    t('Total anchor weight'),
+  );
+
+  $rows = array(get_stat());
+
+  // Вывод статистики
+  $form['stat'] = array(
+    '#type' => 'markup',
+    '#markup'=>  theme('table', array('header' => $header, 'rows' => $rows)),
+  );
+
   $form['urls'] = array(
-      '#title' =>  t('Specify a set of URLs'),
-      '#description' => t('URLs should be separated by commas'),
-      '#type' => 'textarea',
-      '#rows' => '25',
-      '#default_value' => variable_get('multianchors'),
+    '#title' =>  t('Specify a set of URLs'),
+    '#description' => t('URLs should be separated by commas'),
+    '#type' => 'textarea',
+    '#rows' => '25',
+    '#default_value' => variable_get('multianchors'),
   );
-  
+
   $form['prefix'] = array(
-      '#title' =>  t('Prefix'),
-      '#type' => 'textfield',
-      '#default_value' => variable_get('multianchors_prefix'),
+    '#title' =>  t('Prefix'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('multianchors_prefix'),
   );
-  
+
   $form['suffix'] = array(
-      '#title' =>  t('Suffix'),
-      '#type' => 'textfield',
-      '#default_value' => variable_get('multianchors_suffix'),
+    '#title' =>  t('Suffix'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('multianchors_suffix'),
   );
-  
+
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save multianchor settings'),
+    '#value' => t('Save settings'),
   );
-  
-  
+
   $form['hint'] = array(
-    '#markup' => 
+    '#markup' =>
       '<p>
           # - link in the site <br>
           // - comment <br>
           | - separates the anchor of title <br>
           : - separates the title of weight <br>
           <br>'
-          
-  );    
-  
+
+  );
+
   $form['example'] = array(
     '#type' => 'fieldset',
     '#title' => 'Example',
@@ -94,16 +84,16 @@ function multianchor_settings() {
           # http://3w-site.ru<br>
           first anchor | description : 50<br>
           second anchor | description : 30<br>
-          <br>         
+          <br>
            # http://3w-software.ru // comment<br>
           first anchor | description : 10<br>
-          second anchor | description : 20<br>          
+          second anchor | description : 20<br>
           </i>
       </p>',
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE, 
+    '#collapsed' => TRUE,
   );
-      
+
   return $form;
 }
 
@@ -121,8 +111,10 @@ function multianchor_theme() {
   );
 }
 
-function theme_multianchor_output($result) { 
-    $output = '<b>' .  $result['prefix'] . '</b>' . $result['link'] .  theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) . '<b> ' . $result['suffix'] . '</b>' ;   
+function theme_multianchor_output($cfg) {
+    $output = '<b>' . $cfg['prefix'] . '</b>' .
+      $cfg['link'] .  theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) .
+      '<b> ' . $cfg['suffix'] . '</b>' ;
   return $output;
 }
 
@@ -133,16 +125,16 @@ function multianchor_settings_validate($form, &$form_state) {
   $lines = split("\n", $url_str);
   foreach ($lines as $index=>$l) {
     trim($l);
-    
+
     if (ereg("//", $l) && !ereg("://", $l)) {
-      $urls_array = split("//", $l, 2);    
-      $l=trim($urls_array[0]);        
+      $urls_array = split("//", $l, 2);
+      $l=trim($urls_array[0]);
     }
-    
+
     if (preg_match("/^[[:space:]]*$/", $l))
     continue;
-    
-    
+
+
     if ($l['0']=="#"){
       $urls_array = split("#", $l, 2);
       $key=trim($urls_array[1]);
@@ -153,13 +145,13 @@ function multianchor_settings_validate($form, &$form_state) {
       }
       continue;
     }
-    
+
     if (!ereg('\|', $l)) {
       form_set_error('l',  $index+1 . ' строка: Отсутствует "|" в строке: ' . $l);
       $ret = FALSE;
       break;
     }
-    
+
     if (!ereg(':', $l)) {
       form_set_error('l',  $index+1 . ' строка: Отсутствует ":" в строке: ' . $l);
       $ret = FALSE;
@@ -186,7 +178,7 @@ function multianchor_settings_submit($form, &$form_state) {
   variable_set('multianchors_prefix', $prefix);
   variable_set('multianchors_suffix', $suffix);
   $anchors = parse_cache($urlStr);
-  
+
   cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
 }
 
@@ -197,8 +189,8 @@ function multianchor_block_info() {
   $blocks[0]['info'] = t('MultiAnchor');
   $blocks[0]['cache'] = DRUPAL_CACHE_PER_PAGE;
   $blocks[0]['status'] = 1;
-  $blocks[0]['region'] = 'footer';  
-   
+  $blocks[0]['region'] = 'footer';
+
   return $blocks;
 }
 
@@ -206,39 +198,39 @@ function multianchor_block_info() {
 function multianchor_block_view($delta = '') {
   $prefix = variable_get('multianchors_prefix');
   $suffix = variable_get('multianchors_suffix');
-  
-if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
+
+  if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
     $node = node_load(arg(1));
     $link = anchor($node->nid);
   } else {
-    $link = anchor(crc32(arg(0) . arg(1) . arg(2))) ;   
+    $link = anchor(crc32(arg(0) . arg(1) . arg(2))) ;
   }
-  
-  
+
+
   $blocks = array();
   $blocks['subject'] = null;
-  $result= array('prefix' => $prefix, 'link'=>$link, 'suffix'=>$suffix);
-  $blocks['content'] = theme('multianchor_output', $result);
+  $cfg= array('prefix' => $prefix, 'link'=>$link, 'suffix'=>$suffix);
+  $blocks['content'] = theme('multianchor_output', $cfg);
   return $blocks;
 }
 
 
 // Рулетка
 function generate_anchor($anchors, $seed) {
-  $num_sectors = 0;  
-    foreach ($anchors as $anchor) {     
+  $num_sectors = 0;
+    foreach ($anchors as $anchor) {
       foreach($anchor as $a) {
-          $num_sectors += $a['points'];       
-      }      
+          $num_sectors += $a['points'];
+      }
     }
   srand($seed);
   $sector = rand(1, $num_sectors);
-  
+
     foreach ($anchors as $link=>$anchor) {
       foreach($anchor as $a) {
           if ($sector <= $a['points']) return array("title" =>$a['title'],  "link" => $link, "label" => $a['anchor']);
-            else $sector -= $a['points'];       
-      }      
+            else $sector -= $a['points'];
+      }
     }
 }
 
@@ -267,8 +259,8 @@ function parse_cache($url_str, &$stats) {
   foreach ($lines as $l) {
     trim($l);
     if (preg_match("/\/\//", $l) && !preg_match("/:\/\//", $l)) {
-      $urls_array = explode("//", $l, 2);    
-      $l=trim($urls_array[0]);        
+      $urls_array = explode("//", $l, 2);
+      $l=trim($urls_array[0]);
     }
     if (preg_match("/^[[:space:]]*$/", $l))
       continue;
@@ -279,16 +271,16 @@ function parse_cache($url_str, &$stats) {
       continue;
     }
 
-    $str_array = explode("|", $l, 2);   
+    $str_array = explode("|", $l, 2);
     $anchors[$key][$index]['anchor'] = trim($str_array[0]);
     $str_t_point = trim($str_array[1]);
     $str_array = explode(":", $str_t_point, 2);
     $anchors[$key][$index]['title'] = trim($str_array[0]);
     $anchors[$key][$index]['points'] = trim($str_array[1]);
     $index++;
-    $ratio+=trim($str_array[1]);  
+    $ratio+=trim($str_array[1]);
   }
   $stats = array($group, $index, $ratio);
- 
-  return $anchors;   
+
+  return $anchors;
 }
