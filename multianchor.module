@@ -47,16 +47,10 @@ function multianchor_settings() {
     '#default_value' => variable_get('multianchors'),
   );
 
-  $form['prefix'] = array(
-    '#title' =>  t('Prefix'),
+  $form['caption'] = array(
+    '#title' =>  t('Caption'),
     '#type' => 'textfield',
-    '#default_value' => variable_get('multianchors_prefix'),
-  );
-
-  $form['suffix'] = array(
-    '#title' =>  t('Suffix'),
-    '#type' => 'textfield',
-    '#default_value' => variable_get('multianchors_suffix'),
+    '#default_value' => variable_get('multianchors_caption'),
   );
 
   $form['submit'] = array(
@@ -112,10 +106,8 @@ function multianchor_theme() {
 }
 
 function theme_multianchor_output($cfg) {
-  if (!empty($cfg['prefix']))
-    $output = '<b>' . $cfg['prefix'] . '</b>' . '<em></em>' . $cfg['link'];
-  else if (!empty($cfg['suffix']))
-    $output = $cfg['link'] . '<em></em>' . '<b>' . $cfg['suffix'] . '</b>';
+  if (!empty($cfg['caption']))
+    $output = $cfg['link'] . '<em></em>' . '<b>' . $cfg['caption'] . '</b>';
   else
     $output = '<em></em>' . $cfg['link'];
   return $output;
@@ -175,11 +167,9 @@ function multianchor_settings_validate($form, &$form_state) {
 // Сохранение всех введенных анкоров
 function multianchor_settings_submit($form, &$form_state) {
   $urlStr = $form_state['values']['urls'];
-  $prefix = $form_state['values']['prefix'];
-  $suffix = $form_state['values']['suffix'];
+  $caption = $form_state['values']['caption'];
   variable_set('multianchors', $urlStr);
-  variable_set('multianchors_prefix', $prefix);
-  variable_set('multianchors_suffix', $suffix);
+  variable_set('multianchors_caption', $caption);
   $anchors = parse_cache($urlStr);
 
   cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
@@ -199,8 +189,7 @@ function multianchor_block_info() {
 
 // Вывод в блок
 function multianchor_block_view($delta = '') {
-  $prefix = variable_get('multianchors_prefix');
-  $suffix = variable_get('multianchors_suffix');
+  $caption = variable_get('multianchors_caption');
 
   if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
     $node = node_load(arg(1));
@@ -209,10 +198,9 @@ function multianchor_block_view($delta = '') {
     $link = anchor(crc32(arg(0) . arg(1) . arg(2))) ;
   }
 
-
   $blocks = array();
   $blocks['subject'] = null;
-  $cfg= array('prefix' => $prefix, 'link'=>$link, 'suffix'=>$suffix);
+  $cfg= array('caption' => $caption, 'link'=>$link);
   $blocks['content'] = theme('multianchor_output', $cfg);
   return $blocks;
 }
