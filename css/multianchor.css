@@ -1,0 +1,11 @@
+.block-multianchor em {position: absolute; left:50%;
+background:url(3wLogo2.png) center center no-repeat; height:30px; width:30px; margin:0 5px;
+display:block; transition: all 5s ease 0s; -ms-transition: all 5s ease 0s;
+-o-transition: all 5s ease 0s; -moz-transition: all 5s ease 0s; -webkit-transition: all 5s ease-in-out 0s;}
+.block-multianchor {line-height:30px; height:30px}
+.block-multianchor a {position: absolute; right:50%;padding-right:5px; color:inherit;}
+.block-multianchor b {position: absolute; left:50%; padding-left:45px;}
+/*.block-multianchor * {float:left;}*/
+.block-multianchor:hover em {transform: rotate(720deg); -ms-transform: rotate(720deg);
+-o-transform: rotate(720deg); -moz-transform: rotate(720deg); -webkit-transform: rotate(720deg);}
+.block-multianchor .content {position:relative;color:inherit; left:-15px;}

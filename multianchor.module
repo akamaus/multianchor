@@ -112,9 +112,12 @@ function multianchor_theme() {
 }
 
 function theme_multianchor_output($cfg) {
-    $output = '<b>' . $cfg['prefix'] . '</b>' .
-      $cfg['link'] .  theme_image(array('path'=>'/sites/all/modules/multianchor/3wLogo.ico')) .
-      '<b> ' . $cfg['suffix'] . '</b>' ;
+  if (!empty($cfg['prefix']))
+    $output = '<b>' . $cfg['prefix'] . '</b>' . '<em></em>' . $cfg['link'];
+  else if (!empty($cfg['suffix']))
+    $output = $cfg['link'] . '<em></em>' . '<b>' . $cfg['suffix'] . '</b>';
+  else
+    $output = '<em></em>' . $cfg['link'];
   return $output;
 }
 
