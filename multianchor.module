@@ -200,7 +200,7 @@ function multianchor_block_view($delta = '') {
 
   $blocks = array();
   $blocks['subject'] = null;
-  $cfg= array('caption' => $caption, 'link'=>$link);
+  $cfg= array('caption' => check_plain($caption), 'link'=>$link);
   $blocks['content'] = theme('multianchor_output', $cfg);
   return $blocks;
 }
