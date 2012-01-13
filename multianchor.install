@@ -1,4 +1,30 @@
 <?php
+
+function multianchor_install() {
+  $anchors = <<<END
+//Обслуживание сайтов
+# http://3w-site.ru/support
+Поддержка сайтов | Всегда в ногу со временем : 50
+Умная поддержка сайтов | Всегда свежие новости : 30
+Поддержка работы сайтов | Надёжное размещение вашего ресурса :60
+
+//продвижение сайтов
+
+# http://3w-site.ru/seo
+Продвижение сайтов | Методики продвижения, проверенные временем : 50
+Продвижение интернет сайтов | Возвышение вашего бренда над конкурентами : 80
+Поисковое продвижение | Всё что нужно сделать, чтобы вас заметили : 60
+
+
+// создание
+# http://3w-site.ru/creation
+Создание сайтов | Качественные сайты, которые работают : 200
+END;
+
+  variable_set('multianchors', $anchors);
+  variable_set('multianchors_caption', "«Три-В»");
+}
+
 function multianchor_uninstall() {
   variable_del('multianchors');
   variable_del('multianchors_caption');
