@@ -25,6 +25,10 @@ END;
   variable_set('multianchors_caption', "«Три-В»");
 }
 
+function multianchor_enable() {
+  _block_rehash();
+}
+
 function multianchor_uninstall() {
   variable_del('multianchors');
   variable_del('multianchors_caption');

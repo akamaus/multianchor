@@ -36,7 +36,7 @@ function multianchor_settings() {
   // Вывод статистики
   $form['stat'] = array(
     '#type' => 'markup',
-    '#markup'=>  theme('table', array('header' => $header, 'rows' => $rows)),
+    '#value'=> theme('table', $header, $rows),
   );
 
   $form['urls'] = array(
@@ -44,13 +44,13 @@ function multianchor_settings() {
     '#description' => t('URLs should be separated by commas'),
     '#type' => 'textarea',
     '#rows' => '25',
-    '#default_value' => variable_get('multianchors'),
+    '#default_value' => variable_get('multianchors', ""),
   );
 
   $form['caption'] = array(
     '#title' =>  t('Caption'),
     '#type' => 'textfield',
-    '#default_value' => variable_get('multianchors_caption'),
+    '#default_value' => variable_get('multianchors_caption', ""),
   );
 
   $form['submit'] = array(
@@ -92,7 +92,7 @@ function multianchor_settings() {
 }
 
 function get_stat() {
-  $url = variable_get('multianchors');
+  $url = variable_get('multianchors', "");
   $anchors = parse_cache($url, $stat);
   return $stat;
 }
@@ -175,36 +175,36 @@ function multianchor_settings_submit($form, &$form_state) {
   cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
 }
 
+function multianchor_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == 'list') {
+    $blocks[0] = array(
+      'info' => t('MultiAnchor'),
+      'cache' => DRUPAL_CACHE_PER_PAGE,
+      'status' => 1,
+      'region' => 'footer');
 
+  } else if ($op == 'view') {
+    $caption = variable_get('multianchors_caption', "");
 
-function multianchor_block_info() {
-  $blocks = array();
-  $blocks[0]['info'] = t('MultiAnchor');
-  $blocks[0]['cache'] = DRUPAL_CACHE_PER_PAGE;
-  $blocks[0]['status'] = 1;
-  $blocks[0]['region'] = 'footer';
+    if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
+      $node = node_load(arg(1));
+      $link = anchor($node->nid);
+    } else {
+      $link = anchor(crc32(arg(0) . arg(1) . arg(2))) ;
+    }
 
-  return $blocks;
-}
-
-// Вывод в блок
-function multianchor_block_view($delta = '') {
-  $caption = variable_get('multianchors_caption');
-
-  if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2)) {
-    $node = node_load(arg(1));
-    $link = anchor($node->nid);
-  } else {
-    $link = anchor(crc32(arg(0) . arg(1) . arg(2))) ;
+    $blocks = array();
+    $blocks['subject'] = null;
+    $cfg= array('caption' => check_plain($caption), 'link'=>$link);
+    $blocks['content'] = theme('multianchor_output', $cfg);
   }
-
-  $blocks = array();
-  $blocks['subject'] = null;
-  $cfg= array('caption' => check_plain($caption), 'link'=>$link);
-  $blocks['content'] = theme('multianchor_output', $cfg);
+  
   return $blocks;
 }
 
+function multianchor_init() {
+  drupal_add_css(drupal_get_path('module', 'multianchor') . '/css/multianchor.css');
+}
 
 // Рулетка
 function generate_anchor($anchors, $seed) {
@@ -228,7 +228,7 @@ function generate_anchor($anchors, $seed) {
 function anchor($seed) {
   $anchors = cache_get("cache_anchors", "cache_block");
     if (empty($anchors->data)) {
-      $urlStr = variable_get('multianchors');
+      $urlStr = variable_get('multianchors', "");
       $anchors = parse_cache($urlStr);
       cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
       $anchors = cache_get("cache_anchors", "cache_block");
@@ -242,7 +242,7 @@ function anchor($seed) {
   return $output;
 }
 
-function parse_cache($url_str, &$stats) {
+function parse_cache($url_str, &$stats=null) {
   $lines = preg_split("/\n/", $url_str);
   $group=0;
   $index=0;
@@ -271,7 +271,8 @@ function parse_cache($url_str, &$stats) {
     $index++;
     $ratio+=trim($str_array[1]);
   }
-  $stats = array($group, $index, $ratio);
+  if ($stats != null)
+    $stats = array($group, $index, $ratio);
 
   return $anchors;
 }
