@@ -1,8 +1,10 @@
 name = multianchor
-description = show multianchor
-package = my module
-core = 7.x
-configure = admin/config/search/multianchor
-files[] = multianchor.module
+description = Shows a banner of site creators
 
+core = 7.x
+version = "7.x-1.0"
+
+configure = admin/config/search/multianchor
+
+files[] = multianchor.module
 stylesheets[all][] = css/multianchor.css
