@@ -2,7 +2,7 @@
 
 function multianchor_permission() {
   return array(
-    'MultiAnchors' => array(
+    'edit multianchors' => array(
       'title' => t('Edit MultiAnchors'),
     ),
   );
@@ -18,7 +18,7 @@ function multianchor_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('multianchor_settings'),
     'access callback' => 'user_access',
-    'access arguments' => array('configuration'),
+    'access arguments' => array('edit multianchors'),
   );
 
   return $items;
@@ -173,6 +173,7 @@ function multianchor_settings_submit($form, &$form_state) {
   $anchors = parse_cache($urlStr);
 
   cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
+  cache_clear_all(NULL, 'cache_page');
 }
 
 

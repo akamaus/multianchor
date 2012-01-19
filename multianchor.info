@@ -2,7 +2,7 @@ name = multianchor
 description = Shows a banner of site creators
 
 core = 7.x
-version = "7.x-1.0"
+version = "7.x-1.1"
 
 configure = admin/config/search/multianchor
 
