@@ -243,7 +243,7 @@ function anchor($seed) {
   return $output;
 }
 
-function parse_cache($url_str, &$stats) {
+function parse_cache($url_str, &$stats=null) {
   $lines = preg_split("/\n/", $url_str);
   $group=0;
   $index=0;
