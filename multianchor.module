@@ -1,11 +1,7 @@
 <?php
 
-function multianchor_permission() {
-  return array(
-    'MultiAnchors' => array(
-      'title' => t('Edit MultiAnchors'),
-    ),
-  );
+function multianchor_perm() {
+  return array('edit multianchors');
 }
 
 function multianchor_menu() {
@@ -17,8 +13,7 @@ function multianchor_menu() {
     'description' => 'Configure the multianchor',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('multianchor_settings'),
-    'access callback' => 'user_access',
-    'access arguments' => array('configuration'),
+    'access arguments' => array('edit multianchors'),
   );
 
   return $items;
