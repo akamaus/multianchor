@@ -168,6 +168,9 @@ function multianchor_settings_submit($form, &$form_state) {
   $anchors = parse_cache($urlStr);
 
   cache_set("cache_anchors", $anchors, "cache_block" , CACHE_PERMANENT);
+
+  cache_clear_all(NULL, 'cache_block');
+  cache_clear_all(NULL, 'cache_page');
 }
 
 function multianchor_block($op = 'list', $delta = 0, $edit = array()) {
