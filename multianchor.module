@@ -107,9 +107,16 @@ function multianchor_theme() {
 
 function theme_multianchor_output($cfg) {
   if (!empty($cfg['caption']))
-    $output = $cfg['link'] . '<em></em>' . '<b>' . $cfg['caption'] . '</b>';
+    $output = '<table><col width="2*"><col><col width="2*"><tbody class="noline"><tr>' .
+                 '<td class="first link">' . $cfg['link'] . '</td>' .
+                 '<td class="middle logo"><em></em></td>' .
+                 '<td class="last caption">' . $cfg['caption'] . '</td>' .
+              '</tr></tbody></table>' ;
   else
-    $output = '<em></em>' . $cfg['link'];
+    $output = '<table><tbody class="noline"><tr>' .
+                 '<td class="link">' . $cfg['link'] . '</td>' .
+                 '<td class="logo"><em></em></td>' .
+              '</tr></tbody></table>' ;
   return $output;
 }
 
